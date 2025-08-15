@@ -15,7 +15,7 @@ creds = {"usernames": {u: {"name": users[u]["name"], "password": users[u]["passw
 authenticator = stauth.Authenticate(
     credentials=creds,
     cookie_name=st.secrets["cookie"]["name"],
-    key=st.secrets["cookie"]["key"],
+    key=st.secrets["cookie"]["cookie_key"],
     cookie_expiry_days=int(st.secrets["cookie"]["expiry_days"]),
 )
 
