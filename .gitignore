@@ -1,0 +1,8 @@
+# Ignore Python cache and venv
+__pycache__/
+*.pyc
+.venv/
+
+# Ignore local config and secrets
+.streamlit/
+hash_pw.py
