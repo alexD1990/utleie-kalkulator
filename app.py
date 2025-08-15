@@ -8,29 +8,36 @@ from finance import InputsLite, build_model
 import streamlit as st
 import streamlit_authenticator as stauth
 
-users = st.secrets["credentials"]["usernames"]   # {"alex": {"name":"Alex","password":"$2b$..."}, ...}
-usernames = list(users.keys())
-names = [users[u]["name"] for u in usernames]
-hashed_passwords = [users[u]["password"] for u in usernames]
+# Build credentials dict from Secrets (keep your current TOML structure)
+users = st.secrets["credentials"]["usernames"]  # {"alex": {"name":"Alex","password":"$2b$..."}, ...}
+creds = {"usernames": {u: {"name": users[u]["name"], "password": users[u]["password"]} for u in users}}
 
 authenticator = stauth.Authenticate(
-    names,
-    usernames,
-    hashed_passwords,
-    st.secrets["cookie"]["name"],
-    st.secrets["cookie"]["key"],
-    int(st.secrets["cookie"]["expiry_days"]),
+    credentials=creds,
+    cookie_name=st.secrets["cookie"]["name"],
+    key=st.secrets["cookie"]["key"],
+    cookie_expiry_days=int(st.secrets["cookie"]["expiry_days"]),
 )
 
-name, auth_status, username = authenticator.login("Logg inn", "main")
+# Newer login signature
+name, auth_status, username = authenticator.login(
+    location="main",
+    fields={
+        "Form name": "Logg inn",
+        "Username": "Brukernavn",
+        "Password": "Passord",
+        "Login": "Logg inn",
+    },
+)
 
 if auth_status is False:
     st.error("Feil brukernavn/passord"); st.stop()
 elif auth_status is None:
-    st.warning("Skriv inn brukernavn og passord"); st.stop()
+    st.stop()  # user hasn't submitted yet
 
 with st.sidebar:
     authenticator.logout("Logg ut", "sidebar")
+
 
 
 st.set_page_config(page_title="Utleie kalkulator", page_icon="🏠", layout="wide")
