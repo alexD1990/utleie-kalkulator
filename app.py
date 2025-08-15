@@ -5,42 +5,35 @@ import plotly.express as px
 
 from finance import InputsLite, build_model
 
+import streamlit as st
 import streamlit_authenticator as stauth
 
-# --- Auth config from Streamlit Secrets (set in Streamlit Cloud) ---
-# Structure expected in Secrets is shown further below.
+# Read from your Secrets and convert to lists (order matters)
+users = st.secrets["credentials"]["usernames"]  # {"alex": {"name": "Alex","password":"$2b$..."} , ...}
 
-# Build creds dict from secrets
-creds = {"usernames": {}}
-for uname, rec in st.secrets["credentials"]["usernames"].items():
-    creds["usernames"][uname] = {"name": rec["name"], "password": rec["password"]}
-
-cookie_cfg = st.secrets["cookie"]
+names = [u["name"] for u in users.values()]
+usernames = list(users.keys())
+hashed_passwords = [u["password"] for u in users.values()]
 
 authenticator = stauth.Authenticate(
-    credentials=creds,
-    cookie_name=cookie_cfg["name"],
-    key=cookie_cfg["key"],
-    cookie_expiry_days=int(cookie_cfg["expiry_days"]),
+    names,
+    usernames,
+    hashed_passwords,
+    st.secrets["cookie"]["name"],
+    st.secrets["cookie"]["key"],
+    cookie_expiry_days=int(st.secrets["cookie"]["expiry_days"]),
 )
 
-name, auth_status, username = authenticator.login(
-    location="main",
-    fields={
-        "Form name": "Logg inn",
-        "Username": "Brukernavn",
-        "Password": "Passord",
-        "Login": "Logg inn",
-    },
-)
-if auth_status is None:
-    st.stop()
-elif auth_status is False:
-    st.error("Feil brukernavn/passord")
-    st.stop()
+name, auth_status, username = authenticator.login("Logg inn", "main")
+
+if auth_status is False:
+    st.error("Feil brukernavn/passord"); st.stop()
+elif auth_status is None:
+    st.warning("Skriv inn brukernavn og passord"); st.stop()
 
 with st.sidebar:
     authenticator.logout("Logg ut", "sidebar")
+
 
 st.set_page_config(page_title="Utleie kalkulator", page_icon="🏠", layout="wide")
 st.title("🏠 Utleie kalkulator")
