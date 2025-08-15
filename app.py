@@ -8,18 +8,27 @@ from finance import InputsLite, build_model
 import streamlit as st
 import streamlit_authenticator as stauth
 
-# Build credentials dict from Secrets (keep your current TOML structure)
-users = st.secrets["credentials"]["usernames"]  # {"alex": {"name":"Alex","password":"$2b$..."}, ...}
+# --- Build credentials dict from Secrets (keeps your current TOML structure) ---
+# secrets.toml must have:
+# [credentials.usernames.alex]
+# name = "Alex"
+# password = "$2b$12$...bcrypt..."
+# ...
+# [cookie]
+# name = "utleie_kalkulator_cookie"
+# key = "A_LONG_RANDOM_SECRET"   # <-- we read this, but pass as cookie_key below
+# expiry_days = 30
+
+users = st.secrets["credentials"]["usernames"]  # {"alex": {"name": "...", "password": "..."} , ...}
 creds = {"usernames": {u: {"name": users[u]["name"], "password": users[u]["password"]} for u in users}}
 
 authenticator = stauth.Authenticate(
     credentials=creds,
     cookie_name=st.secrets["cookie"]["name"],
-    key=st.secrets["cookie"]["cookie_key"],
+    cookie_key=st.secrets["cookie"]["key"],               # <-- important: param is cookie_key; value comes from ["key"]
     cookie_expiry_days=int(st.secrets["cookie"]["expiry_days"]),
 )
 
-# Newer login signature
 name, auth_status, username = authenticator.login(
     location="main",
     fields={
@@ -37,8 +46,6 @@ elif auth_status is None:
 
 with st.sidebar:
     authenticator.logout("Logg ut", "sidebar")
-
-
 
 st.set_page_config(page_title="Utleie kalkulator", page_icon="🏠", layout="wide")
 st.title("🏠 Utleie kalkulator")
