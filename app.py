@@ -8,12 +8,12 @@ from finance import InputsLite, build_model
 import streamlit as st
 import streamlit_authenticator as stauth
 
-# Read from your Secrets and convert to lists (order matters)
-users = st.secrets["credentials"]["usernames"]  # {"alex": {"name": "Alex","password":"$2b$..."} , ...}
+users = st.secrets["credentials"]["usernames"]   # {"alex": {"name":"Alex","password":"$2b$..."}, ...}
 
-names = [u["name"] for u in users.values()]
+# keep order aligned: build names/passwords from the usernames list
 usernames = list(users.keys())
-hashed_passwords = [u["password"] for u in users.values()]
+names = [users[u]["name"] for u in usernames]
+hashed_passwords = [users[u]["password"] for u in usernames]
 
 authenticator = stauth.Authenticate(
     names,
@@ -21,7 +21,7 @@ authenticator = stauth.Authenticate(
     hashed_passwords,
     st.secrets["cookie"]["name"],
     st.secrets["cookie"]["key"],
-    cookie_expiry_days=int(st.secrets["cookie"]["expiry_days"]),
+    int(st.secrets["cookie"]["expiry_days"]),  # <-- positional, not keyword
 )
 
 name, auth_status, username = authenticator.login("Logg inn", "main")
@@ -33,7 +33,6 @@ elif auth_status is None:
 
 with st.sidebar:
     authenticator.logout("Logg ut", "sidebar")
-
 
 st.set_page_config(page_title="Utleie kalkulator", page_icon="🏠", layout="wide")
 st.title("🏠 Utleie kalkulator")
