@@ -24,7 +24,15 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=int(cookie_cfg["expiry_days"]),
 )
 
-name, auth_status, username = authenticator.login("Logg inn", "main")
+name, auth_status, username = authenticator.login(
+    location="main",
+    fields={
+        "Form name": "Logg inn",
+        "Username": "Brukernavn",
+        "Password": "Passord",
+        "Login": "Logg inn",
+    },
+)
 if auth_status is None:
     st.stop()
 elif auth_status is False:
