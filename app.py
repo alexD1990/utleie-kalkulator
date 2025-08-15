@@ -9,8 +9,6 @@ import streamlit as st
 import streamlit_authenticator as stauth
 
 users = st.secrets["credentials"]["usernames"]   # {"alex": {"name":"Alex","password":"$2b$..."}, ...}
-
-# keep order aligned: build names/passwords from the usernames list
 usernames = list(users.keys())
 names = [users[u]["name"] for u in usernames]
 hashed_passwords = [users[u]["password"] for u in usernames]
@@ -21,7 +19,7 @@ authenticator = stauth.Authenticate(
     hashed_passwords,
     st.secrets["cookie"]["name"],
     st.secrets["cookie"]["key"],
-    int(st.secrets["cookie"]["expiry_days"]),  # <-- positional, not keyword
+    int(st.secrets["cookie"]["expiry_days"]),
 )
 
 name, auth_status, username = authenticator.login("Logg inn", "main")
@@ -33,6 +31,7 @@ elif auth_status is None:
 
 with st.sidebar:
     authenticator.logout("Logg ut", "sidebar")
+
 
 st.set_page_config(page_title="Utleie kalkulator", page_icon="🏠", layout="wide")
 st.title("🏠 Utleie kalkulator")
